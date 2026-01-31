@@ -1,5 +1,5 @@
-# Watsonx_Orchestrate_Google_Search_MCP
-Python MCP server for simple Google Search, to integrate with Watsonx Orchestrate for AI-Demystified hackathon.
+# Watsonx_Orchestrate_Internet_Search_MCP
+Python MCP server for simple internet search via Tavily (more tools can be added), to integrate with Watsonx Orchestrate for AI-Demystified hackathon.
 
 # Screenshots
 ![image](1.JPG)
