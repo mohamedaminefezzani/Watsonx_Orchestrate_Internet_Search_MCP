@@ -4,5 +4,5 @@ Python MCP server for simple Google Search, to integrate with Watsonx Orchestrat
 # Screenshots
 ![image](1.JPG)
 ![image](2.JPG)
-![image](3/JPG)
+![image](3.JPG)
 ![image](4.JPG)
