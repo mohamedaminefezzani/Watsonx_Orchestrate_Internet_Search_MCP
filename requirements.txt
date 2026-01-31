@@ -2,3 +2,4 @@ langchain==0.3.27
 langchain-google-community==2.0.7
 mcp
 python-dotenv==1.1.1
+duckduckgo-search

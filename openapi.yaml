@@ -1,0 +1,162 @@
+openapi: 3.0.0
+info:
+  title: Web Search MCP API
+  version: 0.1.0
+  description: |
+    Web search functionality powered by MCP server and Tavily API.
+    Allows searching the web and retrieving formatted results.
+  contact:
+    name: MCP Search Service
+    email: support@example.com
+
+servers:
+  - url: https://c2c1b9594df5.ngrok-free.app
+    description: Production server via ngrok
+
+tags:
+  - name: search
+    description: Web search operations
+  - name: health
+    description: Service health check
+
+paths:
+  /search:
+    post:
+      tags:
+        - search
+      summary: Search the web
+      description: |
+        Performs a web search using Tavily API and returns formatted results
+        including titles, URLs, and content snippets.
+      operationId: webSearch
+      requestBody:
+        description: Search parameters
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SearchRequest'
+            examples:
+              basic_search:
+                summary: Basic search example
+                value:
+                  query: "artificial intelligence trends 2024"
+                  num_results: 5
+              detailed_search:
+                summary: Detailed search with more results
+                value:
+                  query: "climate change solutions"
+                  num_results: 10
+      responses:
+        '200':
+          description: Search completed successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SearchResponse'
+              examples:
+                success:
+                  summary: Successful search response
+                  value:
+                    results: |
+                      1. AI Trends in 2024 - TechCrunch
+                         https://techcrunch.com/ai-trends-2024
+                         Latest developments in artificial intelligence...
+                      
+                      2. The Future of AI - MIT Technology Review
+                         https://technologyreview.com/ai-future
+                         Expert insights on where AI is heading...
+        '400':
+          description: Bad request - invalid parameters
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal server error - search failed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                search_failed:
+                  summary: Search failure example
+                  value:
+                    detail: "Search failed: API rate limit exceeded"
+
+  /health:
+    get:
+      tags:
+        - health
+      summary: Health check endpoint
+      description: Check if the service is running and healthy
+      operationId: healthCheck
+      responses:
+        '200':
+          description: Service is healthy
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthResponse'
+              examples:
+                healthy:
+                  summary: Healthy service
+                  value:
+                    status: "healthy"
+
+components:
+  schemas:
+    SearchRequest:
+      type: object
+      required:
+        - query
+      properties:
+        query:
+          type: string
+          description: The search query string
+          minLength: 1
+          maxLength: 500
+          example: "machine learning tutorials"
+        num_results:
+          type: integer
+          description: Number of search results to return
+          minimum: 1
+          maximum: 10
+          default: 5
+          example: 5
+
+    SearchResponse:
+      type: object
+      properties:
+        results:
+          type: string
+          description: |
+            Formatted search results containing titles, URLs, and content snippets.
+            Each result is numbered and separated by newlines.
+          example: |
+            1. Introduction to Machine Learning
+               https://example.com/ml-intro
+               A comprehensive guide to getting started...
+            
+            2. Advanced ML Techniques
+               https://example.com/ml-advanced
+               Deep dive into neural networks...
+
+    ErrorResponse:
+      type: object
+      properties:
+        detail:
+          type: string
+          description: Error message describing what went wrong
+          example: "Search failed: Invalid API key"
+
+    HealthResponse:
+      type: object
+      properties:
+        status:
+          type: string
+          description: Current health status of the service
+          enum:
+            - healthy
+            - unhealthy
+          example: "healthy"

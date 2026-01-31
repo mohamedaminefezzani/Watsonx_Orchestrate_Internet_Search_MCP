@@ -1,54 +1,53 @@
-from mcp.server import Server
-from mcp.server.stdio import stdio_server
-from utils import get_google_api_keys
-from langchain_google_community import GoogleSearchAPIWrapper
+# server.py
+from mcp.server.fastmcp import FastMCP
+import os
+import requests
 
-from dotenv import load_dotenv
-load_dotenv()
+TAVILY_API_KEY = os.getenv("TAVILY_API_KEY")
 
-search = GoogleSearchAPIWrapper(
-    google_api_key=GOOGLE_API_KEY,
-    google_cse_id=GOOGLE_CSE_ID,
-    k=5
-)
+server = FastMCP("search-mcp")
 
-server = Server("google-search-mcp")
-
-@server.list_tools()
-async def list_tools():
-    return [{
-        "name": "google_search",
-        "description": "Search the web using Google",
-        "inputSchema": {
-            "type": "object",
-            "properties": {
-                "query": {"type": "string"},
-                "num_results": {"type": "integer", "default": 5}
-            },
-            "required": ["query"]
-        }
-    }]
-
-@server.call_tool()
-async def call_tool(name, arguments):
-    if name != "google_search":
-        raise ValueError("Unknown tool")
-
-    query = arguments["query"]
-    k = arguments.get("num_results", 5)
-
-    results = search.results(query, num_results=k)
-
-    return {
-        "content": [{
-            "type": "text",
-            "text": "\n".join(
-                f"{r['title']} — {r['link']}"
-                for r in results
-            )
-        }]
-    }
+@server.tool()
+async def web_search(query: str, num_results: int = 5) -> str:
+    """Search the web using Tavily
+    
+    Args:
+        query: The search query
+        num_results: Number of results to return (default: 5)
+    
+    Returns:
+        Search results with titles and links
+    """
+    if not TAVILY_API_KEY:
+        return "Error: TAVILY_API_KEY not set"
+    
+    try:
+        response = requests.post(
+            "https://api.tavily.com/search",
+            json={
+                "api_key": TAVILY_API_KEY,
+                "query": query,
+                "max_results": num_results
+            }
+        )
+        response.raise_for_status()
+        data = response.json()
+        
+        results = data.get("results", [])
+        if not results:
+            return "No results found"
+        
+        output = []
+        for i, r in enumerate(results, 1):
+            title = r.get('title', 'No title')
+            url = r.get('url', 'No link')
+            content = r.get('content', '')
+            output.append(f"{i}. {title}\n   {url}\n   {content}\n")
+        
+        return "\n".join(output)
+        
+    except Exception as e:
+        return f"Search failed: {str(e)}"
 
 if __name__ == "__main__":
-    stdio_server(server)
-
+    server.run()
