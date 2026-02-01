@@ -10,7 +10,7 @@ info:
     email: support@example.com
 
 servers:
-  - url: https://c2c1b9594df5.ngrok-free.app
+  - url: change with your ngrok url
     description: Production server via ngrok
 
 tags:
